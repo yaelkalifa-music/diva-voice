@@ -85,7 +85,7 @@ input[type=number]{background:rgba(255,255,255,.06);color:inherit;border:1px sol
 .overlay{position:fixed;inset:0;background:rgba(10,5,9,.85);display:none;align-items:center;justify-content:center;z-index:50;flex-direction:column;gap:16px;padding:20px;text-align:center}
 .overlay .big{font-size:22px;color:var(--gold)}
 .meter{width:220px;height:10px;border-radius:5px;background:rgba(255,255,255,.1);overflow:hidden}.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#9be39b,#e2bd78,#ff6b6b)}
-video#cam{width:150px;aspect-ratio:9/16;object-fit:contain;border-radius:12px;transform:scaleX(-1);display:none;background:#000}
+video#cam{height:44vh;width:auto;max-width:90vw;aspect-ratio:9/16;object-fit:contain;border-radius:12px;transform:scaleX(-1);display:none;background:#000}
 canvas#vid{width:100%;max-width:220px;display:none;margin:10px auto 0;border-radius:12px;border:1px solid var(--line)}
 </style>
 </head>
@@ -139,14 +139,14 @@ canvas#vid{width:100%;max-width:220px;display:none;margin:10px auto 0;border-rad
 <!-- 3. editor -->
 <div class="card">
   <div class="ttl"><b>3</b> עריכה</div>
-  <div id="pvBox" style="display:none;text-align:center;margin-bottom:8px"><video id="pv" playsinline muted preload="auto" style="height:38vh;max-width:100%;aspect-ratio:9/16;object-fit:contain;background:#000;border-radius:12px;border:1px solid var(--line)"></video></div>
+  <div id="pvBox" style="display:none;text-align:center;margin-bottom:8px"><div style="position:relative;display:inline-block"><video id="pv" playsinline muted preload="auto" style="height:38vh;max-width:100%;aspect-ratio:9/16;object-fit:contain;background:#000;border-radius:12px;border:1px solid var(--line)"></video><canvas id="pvLook" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border-radius:12px"></canvas></div></div>
   <div class="transport">
     <button class="btn sm" id="tStart" title="להתחלה">⏮</button>
     <button class="btn sm" id="tBack" title="5 שניות אחורה">−5</button>
     <button class="btn sm main" id="tPlay" style="min-width:70px">▶︎</button>
     <button class="btn sm" id="tFwd" title="5 שניות קדימה">+5</button>
     <div class="clock" id="clock">0:00.0</div>
-    <button class="btn sm" id="zOut">−🔍</button><button class="btn sm" id="zIn">+🔍</button>
+    <button class="btn sm" id="zOut">−🔍</button><button class="btn sm" id="zIn">+🔍</button><button class="btn sm" id="zFit" title="כל השיר במסך">↔ הכל</button>
   </div>
   <div class="tl" id="tl"><canvas id="tlc"></canvas>
     <div class="tracklab" style="top:4px">MUSIC</div><div class="tracklab" id="vlab" style="top:50%">VOICE</div></div>
@@ -156,7 +156,7 @@ canvas#vid{width:100%;max-width:220px;display:none;margin:10px auto 0;border-rad
     <button class="btn sm" data-m="move">↔️ הזזת השירה</button>
   </div>
   <div class="tools">
-    <button class="btn sm" id="eDel" disabled>🗑 מחיקת הקטע</button>
+    <button class="btn sm" id="eDel" disabled>🗑 מחיקת הקטע</button><button class="btn sm sel" id="eUp" disabled>🔊 חזק יותר</button><button class="btn sm sel" id="eDown" disabled>🔉 חלש יותר</button><button class="btn sm sel" id="eFin" disabled>◢ כניסה רכה</button><button class="btn sm sel" id="eFout" disabled>◣ יציאה רכה</button>
     <button class="btn sm rec" id="ePunch" disabled>● הקלטה מחדש של הקטע</button>
     <button class="btn sm" id="eLoop" disabled>🔁 השמעת הקטע</button>
     <button class="btn sm" id="eClear" disabled>✕ ביטול סימון</button>
@@ -191,7 +191,11 @@ canvas#vid{width:100%;max-width:220px;display:none;margin:10px auto 0;border-rad
   <div class="ttl"><b>5</b> שמירה</div>
   <div class="row" style="margin-bottom:8px"><button class="btn" id="listen" style="width:100%">▶︎ להאזין לשיר המוכן (בלי להוריד)</button></div>
   <div class="row"><button class="btn main" id="saveVid" disabled>🎬 שמירה כסרטון</button><button class="btn" id="saveWav" disabled>🎧 שמירה כשיר (שמע)</button></div>
-  <label class="chk" style="margin-top:8px"><input type="checkbox" id="beauty"> ✨ פילטר יופי ותאורה לסרטון (בהיר, חמים ורך)</label>
+  <div class="info" style="margin:10px 0 2px">✨ מראה לסרטון (רואים אותו גם בצילום ובעורך):</div>
+  <label class="chk"><input type="checkbox" id="beauty"> 💡 אור רך וחלק</label>
+  <label class="chk"><input type="checkbox" id="lkSkin"> 🧴 עור חלק</label>
+  <label class="chk"><input type="checkbox" id="lkBlush"> 🌸 סומק עדין</label>
+  <label class="chk"><input type="checkbox" id="lkEyes"> 👁 איפור עיניים עדין</label>
   <label class="chk"><input type="checkbox" id="toDrive"> ☁️ לשמור לגוגל דרייב</label>
   <div class="note opt" id="driveNote" style="display:none">אחרי הלחיצה על שמירה ייפתח חלון השיתוף – בוחרים בו <b>Drive</b>. במחשב: הקובץ יורד, ונפתח לך גוגל דרייב – גוררים אליו את הקובץ.</div>
   <canvas id="vid" width="720" height="1280"></canvas>
@@ -207,7 +211,7 @@ canvas#vid{width:100%;max-width:220px;display:none;margin:10px auto 0;border-rad
 <div class="overlay" id="ov">
   <div class="big" id="ovT">מקליטה…</div>
   <div id="ovLyr"><div id="ovLyrIn"></div></div>
-  <video id="cam" playsinline muted autoplay></video>
+  <div id="camWrap" style="position:relative;display:inline-block"><video id="cam" playsinline muted autoplay></video><canvas id="camLook" style="display:none;position:absolute;inset:0;width:100%;height:100%;border-radius:12px;object-fit:contain"></canvas></div>
   <div class="meter"><i id="lvl"></i></div>
   <div class="clock" id="ovClock">0:00</div>
   <button class="btn rec" id="stopRec" style="min-width:200px;flex:0">■ עצירה</button>
@@ -287,15 +291,17 @@ async function startRecording(fromSec, mode){ const punch = mode==='punch';
   // also let her hear her existing vocal around a punch (muted inside the punch region)
   let vSrc=null;
   const t0=c.currentTime+0.35; if(pbSrc) pbSrc.start(t0,startPos);
+  const ots=c.getOutputTimestamp?c.getOutputTimestamp():null; const t0Perf=(ots&&ots.performanceTime)?ots.performanceTime+(t0-ots.contextTime)*1000:performance.now()+(t0-c.currentTime)*1000; let camPerf=0;
   if(mode!=='all' && P.voc){ const vb=vocalBuffer(useDiva&&P.proc); vSrc=c.createBufferSource(); vSrc.buffer=vb; const vg=c.createGain(); vg.gain.value=gainV();
     vg.gain.setValueAtTime(vg.gain.value,t0); vg.gain.setValueAtTime(0,t0+pre); vSrc.connect(vg).connect(c.destination); vSrc.start(t0,startPos); }
-  if(camRec){ camRec.start(500); }
-  $('cam').style.transform=back?'none':'scaleX(-1)'; $('cam').style.filter=$('beauty').checked?BEAUTY_CSS:'none';
+  if(camRec){ camRec.onstart=()=>{ camPerf=performance.now(); }; camRec.start(500); }
+  $('cam').style.transform=back?'none':'scaleX(-1)'; $('cam').style.filter='none'; $('camLook').style.transform=back?'none':'scaleX(-1)';
+  let camLookStop=null; if(wantCam&&anyLook()){ $('camLook').style.display='block'; camLookStop=lookOverlay($('cam'),$('camLook')); } else $('camLook').style.display='none';
   const metro=startMetro(c,t0,startPos); const lyr=startLyrics(startPos);
   const P0=Math.round(t0*c.sampleRate);
   const atr=stream.getAudioTracks()[0]; let inLat=0; try{ inLat=(atr.getSettings&&atr.getSettings().latency)||0; }catch(e){}
   const lat = (c.outputLatency||c.baseLatency||0) + inLat;
-  rec={stream,src,node,chunks,pbSrc,vSrc,camRec,camChunks,P0,startPos,lat,punch,mode,fromSec,t0,metro,lyr,back};
+  rec={stream,src,node,chunks,pbSrc,vSrc,camRec,camChunks,P0,startPos,lat,punch,mode,fromSec,t0,metro,lyr,back,camLookStop,camPerf:()=>camPerf,t0Perf};
   // overlay
   $('ov').style.display='flex'; $('ovT').textContent=punch?'מקליטה מחדש את הקטע…':mode==='from'?'מקליטה מהסמן… 🎧':'מקליטה… 🎧';
   const tick=()=>{ if(!rec) return; const t=c.currentTime-t0; $('ovClock').textContent=t<0?'מתחילה…':fmtT(startPos+t)+(mode!=='all'&&t<pre?'  (עוד '+(pre-t).toFixed(1)+')':''); $('lvl').style.width=Math.min(100,lvl*140)+'%'; if(lyr) lyr(startPos+t);
@@ -308,14 +314,14 @@ async function startRecording(fromSec, mode){ const punch = mode==='punch';
 }
 async function stopRecording(){
   if(!rec) return; const r=rec; rec=null;
-  if(r.metro) r.metro(); $('ovLyr').style.display='none';
+  if(r.metro) r.metro(); $('ovLyr').style.display='none'; if(r.camLookStop){ r.camLookStop(); $('camLook').style.display='none'; }
   if(r.pbSrc) try{ r.pbSrc.stop(); }catch(e){} if(r.vSrc) try{ r.vSrc.stop(); }catch(e){}
   r.node.port.postMessage('stop'); r.src.disconnect();
   let camBlob=null;
   if(r.camRec){ await new Promise(res=>{ r.camRec.onstop=res; r.camRec.stop(); }); camBlob=new Blob(r.camChunks,{type:r.camRec.mimeType||'video/mp4'}); }
   r.stream.getTracks().forEach(t=>t.stop()); $('cam').style.display='none'; $('ov').style.display='none';
-  if(camBlob){ const vs=await blobDuration(camBlob); const from=r.mode==='all'?r.startPos:r.fromSec; let end=r.startPos+(vs||((r.chunks.length?(r.chunks[r.chunks.length-1].f-r.chunks[0].f):0)/ctx.sampleRate)); if(r.punch&&sel) end=Math.min(end,sel[1]);
-    if(r.mode==='all') P.clips=[]; P.clips.push({blob:camBlob,start:r.startPos,from,end,mirror:!r.back}); pvReset(); }
+  if(camBlob){ const vs=await blobDuration(camBlob); const from=r.mode==='all'?r.startPos:r.fromSec; let end=(r.camPerf()?r.startPos+(r.camPerf()-r.t0Perf)/1000-(ctx.outputLatency||ctx.baseLatency||0):r.startPos)+(vs||((r.chunks.length?(r.chunks[r.chunks.length-1].f-r.chunks[0].f):0)/ctx.sampleRate)); if(r.punch&&sel) end=Math.min(end,sel[1]);
+    if(r.mode==='all') P.clips=[]; const cp=r.camPerf(); const outLat=(ctx.outputLatency||ctx.baseLatency||0); const vStart=cp?r.startPos+(cp-r.t0Perf)/1000-outLat:r.startPos; P.clips.push({blob:camBlob,start:vStart,from:Math.max(from,vStart),end,mirror:!r.back}); pvReset(); }
   const c=ctx, sr=c.sampleRate;
   if(!r.chunks.length){ $('recMsg').innerHTML='<div class="err">לא נקלט קול. בדקי שהמיקרופון מחובר ומאושר.</div>'; return; }
   // map every captured frame onto the song timeline: tl = F - lat - P0 + startPos
@@ -365,10 +371,117 @@ $('cleanBtn').onclick=async()=>{ if(!P.voc) return; const b=$('cleanBtn'); b.dis
   updateButtons(); };
 // ---- options (all off by default; choices are remembered on this device)
 const BEAUTY_CSS='brightness(1.08) contrast(.94) saturate(1.1) sepia(.08)';
+// Diva Voice "look": soft light, smooth skin, a touch of blush, soft eye makeup.
+// Face points come from MediaPipe Face Mesh (468 points), loaded only when one of these options is on.
+const LOOK = (() => {
+  const OVAL = [10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109];
+  const EYE_L = [33,7,163,144,145,153,154,155,133,173,157,158,159,160,161,246];
+  const EYE_R = [263,249,390,373,374,380,381,382,362,398,384,385,386,387,388,466];
+  const LID_L = [33,246,161,160,159,158,157,173,133];
+  const LID_R = [263,466,388,387,386,385,384,398,362];
+  const BROW_L = [70,63,105,66,107], BROW_R = [300,293,334,296,336];
+  const LIPS = [61,146,91,181,84,17,314,405,321,375,291,409,270,269,267,0,37,39,40,185];
+  let skinC = null, maskC = null, fm = null, loading = null, busy = false, last = null, lastAt = 0;
+
+  function load() {
+    if (fm) return Promise.resolve(fm);
+    if (loading) return loading;
+    loading = new Promise((res, rej) => {
+      const s = document.createElement('script'); s.src = 'facemesh/face_mesh.js';
+      s.onload = async () => {
+        try {
+          const m = new FaceMesh({ locateFile: f => 'facemesh/' + f });
+          m.setOptions({ maxNumFaces: 1, refineLandmarks: false, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5, selfieMode: false });
+          m.onResults(r => { last = (r.multiFaceLandmarks && r.multiFaceLandmarks[0]) || null; lastAt = performance.now(); });
+          await m.initialize(); fm = m; res(m);
+        } catch (e) { loading = null; rej(e); }
+      };
+      s.onerror = () => { loading = null; rej(new Error('facemesh')); };
+      document.head.appendChild(s);
+    });
+    return loading;
+  }
+  // feed a frame (non-blocking: skips while the previous one is still being analysed)
+  function track(src) { if (!fm || busy) return; busy = true; fm.send({ image: src }).catch(() => {}).finally(() => { busy = false; }); }
+  async function detectNow(src) { await load(); last = null; await fm.send({ image: src }); return last; }
+  function points() { return performance.now() - lastAt < 1500 ? last : null; }
+
+  const P = (lm, i, r) => [r.x + lm[i].x * r.w, r.y + lm[i].y * r.h];
+  function path(g, lm, idx, r, close = true) { g.beginPath(); idx.forEach((i, k) => { const [x, y] = P(lm, i, r); k ? g.lineTo(x, y) : g.moveTo(x, y); }); if (close) g.closePath(); }
+  function grow(lm, idx, r, f) { // polygon scaled around its centre
+    const pts = idx.map(i => P(lm, i, r)); const cx = pts.reduce((a, p) => a + p[0], 0) / pts.length, cy = pts.reduce((a, p) => a + p[1], 0) / pts.length;
+    return pts.map(([x, y]) => [cx + (x - cx) * f, cy + (y - cy) * f]);
+  }
+  function poly(g, pts) { g.beginPath(); pts.forEach(([x, y], k) => k ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); }
+
+  // draw `src` into rect r = {x,y,w,h} on context g (already mirrored if needed), with the chosen look
+  function draw(g, src, r, o) {
+    const lm = (o.skin || o.blush || o.eyes) ? points() : null;
+    const base = o.light ? 'brightness(1.08) contrast(.92) saturate(1.08) sepia(.07)' : 'none';
+    g.filter = base; g.drawImage(src, r.x, r.y, r.w, r.h); g.filter = 'none';
+    if (o.light) { // soft, even light: a gentle glow over the whole picture
+      g.save(); g.globalAlpha = 0.26; g.globalCompositeOperation = 'screen'; g.filter = 'blur(14px) brightness(1.04)'; g.drawImage(src, r.x, r.y, r.w, r.h); g.restore();
+    }
+    if (!lm) return;
+    const [ax, ay] = P(lm, 234, r), [bx, by] = P(lm, 454, r); const fw = Math.hypot(bx - ax, by - ay); if (!(fw > 20)) return;
+    if (o.skin) { // smooth skin inside the face (feathered edges), keeping eyes, brows and lips sharp
+      const W = Math.round(r.w), H = Math.round(r.h), L = { x: 0, y: 0, w: W, h: H };
+      if (!skinC || skinC.width !== W || skinC.height !== H) { skinC = new OffscreenCanvas(W, H); maskC = new OffscreenCanvas(W, H); }
+      const sg = skinC.getContext('2d'), mg = maskC.getContext('2d');
+      sg.clearRect(0, 0, W, H); sg.filter = 'blur(' + Math.max(2, fw * 0.022).toFixed(1) + 'px) ' + (o.light ? 'brightness(1.1) saturate(1.05)' : 'brightness(1.04)');
+      sg.drawImage(src, 0, 0, W, H); sg.filter = 'none';
+      mg.clearRect(0, 0, W, H); mg.filter = 'blur(' + (fw * 0.035).toFixed(1) + 'px)'; mg.fillStyle = '#fff';
+      poly(mg, grow(lm, OVAL, L, 0.93)); mg.fill();
+      mg.globalCompositeOperation = 'destination-out'; mg.filter = 'blur(' + (fw * 0.012).toFixed(1) + 'px)';
+      for (const idx of [EYE_L, EYE_R]) { poly(mg, grow(lm, idx, L, 1.8)); mg.fill(); }
+      for (const idx of [BROW_L, BROW_R]) { poly(mg, grow(lm, idx, L, 1.5)); mg.fill(); }
+      poly(mg, grow(lm, LIPS, L, 1.12)); mg.fill();
+      mg.globalCompositeOperation = 'source-over'; mg.filter = 'none';
+      sg.globalCompositeOperation = 'destination-in'; sg.drawImage(maskC, 0, 0); sg.globalCompositeOperation = 'source-over';
+      g.save(); g.globalAlpha = 0.7; g.drawImage(skinC, r.x, r.y, r.w, r.h); g.restore();
+    }
+    if (o.blush) { // a touch of rosy colour on the apples of the cheeks
+      g.save(); g.globalCompositeOperation = 'soft-light';
+      for (const i of [205, 425]) { const [x, y] = P(lm, i, r), rad = fw * 0.16;
+        const gr = g.createRadialGradient(x, y, 0, x, y, rad); gr.addColorStop(0, 'rgba(230,80,110,.62)'); gr.addColorStop(.6, 'rgba(230,80,110,.22)'); gr.addColorStop(1, 'rgba(230,80,110,0)');
+        g.fillStyle = gr; g.fillRect(x - rad, y - rad, rad * 2, rad * 2); }
+      g.restore();
+    }
+    if (o.eyes) { // soft shadow on the lid + thin liner along the upper lash line
+      for (const [lid, side] of [[LID_L, -1], [LID_R, 1]]) {
+        const pts = lid.map(i => P(lm, i, r)); const up = fw * 0.045;
+        g.save(); g.globalCompositeOperation = 'multiply'; g.filter = 'blur(' + (fw * 0.012).toFixed(1) + 'px)'; g.globalAlpha = 0.5; g.fillStyle = 'rgb(140,85,100)';
+        g.beginPath(); pts.forEach(([x, y], k) => k ? g.lineTo(x, y) : g.moveTo(x, y));
+        for (let k = pts.length - 1; k >= 0; k--) { const [x, y] = pts[k]; const lift = up * Math.sin(Math.PI * k / (pts.length - 1)) + up * 0.25; g.lineTo(x, y - lift); }
+        g.closePath(); g.fill(); g.restore();
+        // liner, with a small wing at the outer corner
+        const outer = pts[0], prev = pts[1]; const wx = outer[0] + (outer[0] - prev[0]) * 0.55, wy = outer[1] - fw * 0.01;
+        // tapered liner: thin at the inner corner, fuller towards the outer corner
+        g.save(); g.fillStyle = 'rgba(30,14,20,.6)'; g.filter = 'blur(0.8px)'; const n = pts.length, th = fw * 0.0065;
+        g.beginPath(); g.moveTo(wx, wy); for (let k = 0; k < n; k++) { const [x, y] = pts[k]; g.lineTo(x, y + fw * 0.005); }
+        for (let k = n - 1; k >= 0; k--) { const [x, y] = pts[k]; const w = th * Math.pow(1 - k / (n - 1), 1.3); g.lineTo(x, y - w); }
+        g.closePath(); g.fill(); g.restore();
+      }
+    }
+  }
+  return { load, track, detectNow, draw, points, ready: () => !!fm };
+})();
+
+function lookOpts(){ return {light:$('beauty').checked, skin:$('lkSkin').checked, blush:$('lkBlush').checked, eyes:$('lkEyes').checked}; }
+function faceOn(){ const o=lookOpts(); return o.skin||o.blush||o.eyes; }
+function anyLook(){ const o=lookOpts(); return o.light||o.skin||o.blush||o.eyes; }
+// live look on a <video>: draw it into a canvas that sits on top
+function lookOverlay(vid,cv,mirror){ let on=true; const g=cv.getContext('2d');
+  const step=()=>{ if(!on) return; if(vid.readyState>=2&&vid.videoWidth){ const w=vid.videoWidth,h=vid.videoHeight; if(cv.width!==w||cv.height!==h){ cv.width=w; cv.height=h; }
+      if(faceOn()) LOOK.track(vid); g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,w,h); LOOK.draw(g,vid,{x:0,y:0,w,h},lookOpts()); }
+    requestAnimationFrame(step); };
+  step(); return ()=>{ on=false; }; }
 let camFacing='user';
 const LS={ get(k,d){ try{ const v=localStorage.getItem('dv_'+k); return v===null?d:JSON.parse(v); }catch(e){ return d; } }, set(k,v){ try{ localStorage.setItem('dv_'+k,JSON.stringify(v)); }catch(e){} } };
 function bindOpt(id,rowId){ const cb=$(id); cb.checked=LS.get(id,false); const show=()=>{ if(rowId) $(rowId).style.display=cb.checked?(rowId==='lyricsRow'||rowId==='driveNote'?'block':'flex'):'none'; }; show(); cb.addEventListener('change',()=>{ LS.set(id,cb.checked); show(); }); }
-bindOpt('useCam','camRow'); bindOpt('useMetro','metroRow'); bindOpt('useLyrics','lyricsRow'); bindOpt('beauty'); bindOpt('toDrive','driveNote');
+bindOpt('useCam','camRow'); bindOpt('useMetro','metroRow'); bindOpt('useLyrics','lyricsRow'); bindOpt('beauty'); bindOpt('lkSkin'); bindOpt('lkBlush'); bindOpt('lkEyes');
+['beauty','lkSkin','lkBlush','lkEyes'].forEach(id=>$(id).addEventListener('change',()=>{ if(faceOn()) LOOK.load().catch(()=>{}); try{ pvSync(true); }catch(e){} }));
+if(faceOn()) LOOK.load().catch(()=>{}); bindOpt('toDrive','driveNote');
 const setFacing=f=>{ camFacing=f; LS.set('facing',f); $('camFront').classList.toggle('on',f==='user'); $('camBack').classList.toggle('on',f!=='user'); };
 setFacing(LS.get('facing','user')); $('camFront').onclick=()=>setFacing('user'); $('camBack').onclick=()=>setFacing('environment');
 $('lyrics').value=LS.get('lyricsText',''); $('lyrics').oninput=()=>LS.set('lyricsText',$('lyrics').value);
@@ -479,7 +592,7 @@ function drawWave(g,pk,y0,h,offPx,col){ g.fillStyle=col; const W=cv.width/(windo
   for(let p=p0;p<p1;p++){ const x=p+offPx-scrollX; const lo=pk.mn[p], hi=pk.mx[p]; g.fillRect(x,m-hi*a*1.6,1,Math.max(1,(hi-lo)*a*1.6)); } }
 function follow(){ const W=$('tl').clientWidth; const x=playhead*pxPerSec; if(x<scrollX+20||x>scrollX+W-40) scrollX=Math.max(0,x-W*0.3); }
 function maxScroll(){ return Math.max(0, tlLen()/(P.sr||44100)*pxPerSec - $('tl').clientWidth + 40); }
-$('zIn').onclick=()=>{ zoom(1.6); }; $('zOut').onclick=()=>{ zoom(1/1.6); };
+$('zIn').onclick=()=>{ zoom(1.6); }; $('zFit').onclick=()=>{ fitZoom(); peaksDirty=true; draw(); }; $('zOut').onclick=()=>{ zoom(1/1.6); };
 function zoom(f){ const W=$('tl').clientWidth; const centerT=(scrollX+W/2)/pxPerSec; pxPerSec=Math.max(2,Math.min(800,pxPerSec*f)); scrollX=Math.max(0,Math.min(maxScroll(),centerT*pxPerSec-W/2)); peaksDirty=true; draw(); }
 document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{ mode=b.dataset.m; document.querySelectorAll('#modes button').forEach(x=>x.classList.toggle('on',x===b)); });
 // pointer gestures on the timeline
@@ -517,11 +630,19 @@ $('eDel').onclick=()=>{ if(!sel||!P.voc) return; const a=Math.round(sel[0]*P.sr)
   markDirty(); peaksDirty=true; draw(); };
 $('eUndo').onclick=()=>{ const u=P.undo.pop(); if(!u) return; (P.redo=P.redo||[]).push({va:u.va,data:P.voc.slice(u.va,u.va+u.data.length)}); P.voc.set(u.data,u.va); markDirty(); peaksDirty=true; draw(); autoDiva(); updateButtons(); };
 $('eRedo').onclick=()=>{ const u=(P.redo||[]).pop(); if(!u) return; P.undo.push({va:u.va,data:P.voc.slice(u.va,u.va+u.data.length)}); P.voc.set(u.data,u.va); markDirty(); peaksDirty=true; draw(); autoDiva(); updateButtons(); };
+function selOp(fn){ if(!sel||!P.voc) return; const a=Math.round(sel[0]*P.sr), b=Math.round(sel[1]*P.sr); pushUndo(a,b); const n=b-a;
+  for(let k=a;k<b;k++){ const vi=k-P.shift; if(vi<0||vi>=P.voc.length) continue; P.voc[vi]*=fn((k-a)/n, k-a, b-k); }
+  markDirty(); peaksDirty=true; draw(); autoDiva(); updateButtons(); }
+const edgeFade=(i,j)=>{ const f=Math.round(0.01*P.sr); return Math.min(1,i/f,j/f); };
+$('eUp').onclick=()=>selOp((x,i,j)=>1+(1.413-1)*edgeFade(i,j));     // +3 dB, smooth edges
+$('eDown').onclick=()=>selOp((x,i,j)=>1+(0.708-1)*edgeFade(i,j));   // -3 dB
+$('eFin').onclick=()=>selOp(x=>x*x*(3-2*x));
+$('eFout').onclick=()=>selOp(x=>{ const y=1-x; return y*y*(3-2*y); });
 $('eClear').onclick=()=>{ sel=null; draw(); updateButtons(); };
 $('eLoop').onclick=()=>{ if(sel) startPlay(sel[0],sel[1]); };
 $('ePunch').onclick=()=>{ if(!sel||!P.voc) return; stopPlay(); startRecording(sel[0],'punch'); };
 function updateButtons(){ try{ autoSave(); }catch(e){} try{ const on=!!(sel&&sel[1]-sel[0]>0.2); $('onlySelRow').style.display=on?'flex':'none'; if(on) $('selLen').textContent='('+fmtT(sel[0])+' – '+fmtT(sel[1])+')'; }catch(e){}
-  const hasSel=!!sel&&!!P.voc; ['eDel','eLoop','eClear'].forEach(id=>$(id).disabled=!sel); $('eDel').disabled=!hasSel; $('ePunch').disabled=!hasSel;
+  const hasSel=!!sel&&!!P.voc; ['eDel','eLoop','eClear'].forEach(id=>$(id).disabled=!sel); $('eDel').disabled=!hasSel; ['eUp','eDown','eFin','eFout'].forEach(id=>$(id).disabled=!hasSel); $('ePunch').disabled=!hasSel;
   $('eUndo').disabled=!P.undo.length; $('eRedo').disabled=!(P.redo&&P.redo.length); $('cleanBtn').disabled=!P.voc; $('recAll').disabled=false; $('recHere').disabled=!(P.pb||P.voc); $('go').disabled=!P.voc||!engineOK; $('saveWav').disabled=!(P.pb||P.voc); $('saveVid').disabled=!(P.pb||P.voc)||!window.MediaRecorder; }
 
 // ================================================================ Diva Voice settings UI
@@ -634,16 +755,16 @@ function clipAt(t){ for(let i=P.clips.length-1;i>=0;i--){ const k=P.clips[i]; if
 function clipURL(k){ if(!k.url) k.url=URL.createObjectURL(k.blob); return k.url; }
 function blobDuration(b){ return new Promise(res=>{ const v=document.createElement('video'); v.preload='metadata'; v.muted=true; v.src=URL.createObjectURL(b);
   const done=d=>{ URL.revokeObjectURL(v.src); res(isFinite(d)&&d>0?d:0); }; v.onloadedmetadata=()=>{ if(isFinite(v.duration)) done(v.duration); else { v.currentTime=1e7; v.ontimeupdate=()=>{ v.ontimeupdate=null; done(v.duration); }; } }; v.onerror=()=>done(0); setTimeout(()=>done(0),4000); }); }
-let pvCur=null, pvLast=-1;
+let pvCur=null, pvLast=-1, pvLookStop=null;
 function pvReset(){ pvCur=null; pvLast=-1; try{ pvSync(true); }catch(e){} }
 function pvSync(force){ const box=$('pvBox'), v=$('pv'); if(!P.clips||!P.clips.length){ box.style.display='none'; return; } box.style.display='block';
   const t=playhead, k=clipAt(t);
-  v.style.filter=$('beauty').checked?BEAUTY_CSS:'none';
+  v.style.filter='none'; const lk=anyLook(); $('pvLook').style.display=lk?'block':'none'; if(lk&&!pvLookStop) pvLookStop=lookOverlay(v,$('pvLook')); if(!lk&&pvLookStop){ pvLookStop(); pvLookStop=null; }
   if(!k){ if(pvCur){ v.pause(); v.removeAttribute('src'); v.load(); pvCur=null; } v.style.opacity=.25; return; }
-  v.style.opacity=1; v.style.transform=k.mirror?'scaleX(-1)':'none';
+  v.style.opacity=1; v.style.transform=k.mirror?'scaleX(-1)':'none'; $('pvLook').style.transform=v.style.transform;
   const want=t-k.start;
   if(pvCur!==k){ pvCur=k; v.src=clipURL(k); const go=()=>{ try{ v.currentTime=Math.max(0,want); }catch(e){} if(play) v.play().catch(()=>{}); }; if(v.readyState>=1) go(); else v.onloadedmetadata=()=>{ v.onloadedmetadata=null; go(); }; pvLast=t; return; }
-  if(play){ if(v.paused) v.play().catch(()=>{}); if(Math.abs(v.currentTime-want)>0.3) try{ v.currentTime=want; }catch(e){} }
+  if(play){ if(v.paused) v.play().catch(()=>{}); const d=want-v.currentTime; if(Math.abs(d)>0.5){ try{ v.currentTime=want; }catch(e){} } else v.playbackRate=1+Math.max(-0.12,Math.min(0.12,d*0.9)); }
   else { if(!v.paused) v.pause(); if(force||Math.abs(t-pvLast)>0.02){ try{ v.currentTime=Math.max(0,want); }catch(e){} } }
   pvLast=t; }
 function pickMime(){ for(const m of ['video/mp4;codecs=avc1,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm']){ try{ if(MediaRecorder.isTypeSupported(m)) return m; }catch(e){} } return ''; }
@@ -658,12 +779,11 @@ $('saveVid').onclick=async()=>{
   const stream=cvv.captureStream(30); dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
   const mime=pickMime(); let mr; try{ mr=new MediaRecorder(stream,mime?{mimeType:mime,videoBitsPerSecond:4e6}:undefined); }catch(e){ sm.innerHTML='<div class="err">המכשיר לא מאפשר ליצור סרטון – נסי "שמירה כשיר".</div>'; $('saveVid').disabled=false; return; }
   const chunks=[]; mr.ondataavailable=e=>{ if(e.data&&e.data.size) chunks.push(e.data); };
-  const beautyOn=$('beauty').checked; const len=ab.duration, bars=new Uint8Array(an.frequencyBinCount); let raf=0, t0=0;
+  const lo=lookOpts(), fOn=faceOn(); if(fOn){ try{ sm.innerHTML='<div class="note">מכינה את האיפור…</div>'; await LOOK.load(); }catch(e){} } const len=ab.duration, bars=new Uint8Array(an.frequencyBinCount); let raf=0, t0=0;
   const drawF=()=>{ const t=c.currentTime-t0;
     { const k=clipAt(t+off); if(k!==curK){ if(video) video.pause(); curK=k; video=k?vids.get(k)||null:null; if(video){ try{ video.currentTime=Math.max(0,t+off-k.start); }catch(e){} video.play().catch(()=>{}); } }
-      else if(video&&Math.abs(video.currentTime-(t+off-k.start))>0.35){ try{ video.currentTime=t+off-k.start; }catch(e){} } }
-    if(video&&video.readyState>=2&&!video.ended){ const vw=video.videoWidth, vh=video.videoHeight, sc=Math.max(720/vw,1280/vh), sf=Math.min(720/vw,1280/vh); g.save(); if(curK.mirror){ g.translate(720,0); g.scale(-1,1); } g.filter='blur(28px) brightness(.55)'; g.drawImage(video,(720-vw*sc)/2,(1280-vh*sc)/2,vw*sc,vh*sc); const bx=(720-vw*sf)/2, by=(1280-vh*sf)/2; g.filter=beautyOn?BEAUTY_CSS:'none'; g.drawImage(video,bx,by,vw*sf,vh*sf);
-      if(beautyOn){ g.globalAlpha=0.28; g.globalCompositeOperation='screen'; g.filter='blur(10px) brightness(1.05)'; g.drawImage(video,bx,by,vw*sf,vh*sf); g.globalAlpha=1; g.globalCompositeOperation='source-over'; }
+      else if(video){ const d=(t+off-k.start)-video.currentTime; if(Math.abs(d)>0.5){ try{ video.currentTime=t+off-k.start; }catch(e){} } else video.playbackRate=1+Math.max(-0.12,Math.min(0.12,d*0.9)); } }
+    if(video&&video.readyState>=2&&!video.ended){ const vw=video.videoWidth, vh=video.videoHeight, sc=Math.max(720/vw,1280/vh), sf=Math.min(720/vw,1280/vh); g.save(); if(curK.mirror){ g.translate(720,0); g.scale(-1,1); } g.filter='blur(28px) brightness(.55)'; g.drawImage(video,(720-vw*sc)/2,(1280-vh*sc)/2,vw*sc,vh*sc); g.filter='none'; const bx=(720-vw*sf)/2, by=(1280-vh*sf)/2; if(fOn) LOOK.track(video); LOOK.draw(g,video,{x:bx,y:by,w:vw*sf,h:vh*sf},lo);
       g.filter='none'; g.restore(); }
     else { const gr=g.createLinearGradient(0,0,0,1280); gr.addColorStop(0,'#2a1424'); gr.addColorStop(1,'#120a10'); g.fillStyle=gr; g.fillRect(0,0,720,1280);
       an.getByteFrequencyData(bars); const n=28,bw=14,gap=10,x0=(720-(n*bw+(n-1)*gap))/2;
