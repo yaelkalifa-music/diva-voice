@@ -47,8 +47,10 @@ h1{margin:0;font-weight:500;letter-spacing:.3em;color:var(--gold);font-size:21px
 .tools{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .mix{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
 .sl .lab{display:flex;justify-content:space-between;font-size:13px;color:var(--dim);margin-bottom:2px}.sl .lab span:last-child{color:var(--gold);direction:ltr}
+@media (pointer:coarse){ .sl{touch-action:pan-y} .sl input[type=range]{pointer-events:none} }
 input[type=range]{direction:ltr;width:100%;-webkit-appearance:none;appearance:none;height:28px;background:transparent}
 input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--pink),var(--gold)) 0/var(--p,50%) 100% no-repeat,rgba(255,255,255,.1)}
+input[type=range].drag::-webkit-slider-thumb{transform:scale(1.25);box-shadow:0 0 0 6px rgba(226,189,120,.25)}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;margin-top:-9px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#7a4a66,#2a1424);border:2px solid var(--gold)}
 input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:rgba(255,255,255,.1)}
 input[type=range]::-moz-range-progress{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--pink),var(--gold))}
@@ -77,7 +79,7 @@ details{margin-top:8px;border-top:1px solid var(--faint);padding-top:6px}summary
 .overlay{position:fixed;inset:0;background:rgba(10,5,9,.85);display:none;align-items:center;justify-content:center;z-index:50;flex-direction:column;gap:16px;padding:20px;text-align:center}
 .overlay .big{font-size:22px;color:var(--gold)}
 .meter{width:220px;height:10px;border-radius:5px;background:rgba(255,255,255,.1);overflow:hidden}.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#9be39b,#e2bd78,#ff6b6b)}
-video#cam{width:150px;aspect-ratio:9/16;object-fit:cover;border-radius:12px;transform:scaleX(-1);display:none;background:#000}
+video#cam{width:150px;aspect-ratio:9/16;object-fit:contain;border-radius:12px;transform:scaleX(-1);display:none;background:#000}
 canvas#vid{width:100%;max-width:220px;display:none;margin:10px auto 0;border-radius:12px;border:1px solid var(--line)}
 </style>
 </head>
@@ -248,7 +250,7 @@ async function startRecording(fromSec, mode){ const punch = mode==='punch';
   if(!P.sr) P.sr=c.sampleRate;
   let stream;
   const wantCam = mode==='all' && $('useCam').checked;
-  try{ stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1}, video: wantCam?{facingMode:'user',aspectRatio:{ideal:9/16},width:{ideal:720},height:{ideal:1280}}:false}); }
+  try{ stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1}, video: wantCam?{facingMode:'user',width:{ideal:1280},height:{ideal:1280}}:false}); }
   catch(e){ $('recMsg').innerHTML='<div class="err">צריך לאשר גישה למיקרופון'+(wantCam?' ולמצלמה':'')+' כדי להקליט.</div>'; return; }
   if(!c.audioWorklet){ $('recMsg').innerHTML='<div class="err">הדפדפן הזה לא תומך בהקלטה. נסי Safari או Chrome מעודכנים.</div>'; stream.getTracks().forEach(t=>t.stop()); return; }
   if(!startRecording.loaded){ await c.audioWorklet.addModule(URL.createObjectURL(new Blob([WORKLET],{type:'text/javascript'}))); startRecording.loaded=true; }
@@ -258,7 +260,7 @@ async function startRecording(fromSec, mode){ const punch = mode==='punch';
   src.connect(node);
   // camera
   let camRec=null, camChunks=[];
-  if(wantCam && stream.getVideoTracks().length){ const v=$('cam'); v.srcObject=new MediaStream(stream.getVideoTracks()); v.style.display='block'; v.play().catch(()=>{});
+  if(wantCam && stream.getVideoTracks().length){ try{ const vt=stream.getVideoTracks()[0], cp=vt.getCapabilities&&vt.getCapabilities(); if(cp&&cp.zoom) await vt.applyConstraints({advanced:[{zoom:cp.zoom.min}]}); }catch(e){} const v=$('cam'); v.srcObject=new MediaStream(stream.getVideoTracks()); v.style.display='block'; v.play().catch(()=>{});
     try{ camRec=new MediaRecorder(new MediaStream(stream.getVideoTracks())); camRec.ondataavailable=e=>{ if(e.data.size) camChunks.push(e.data); }; }catch(e){ camRec=null; } }
   // playback: preroll before the punch region
   const pre = mode==='all' ? 0 : Math.min(2.5, fromSec);
@@ -563,7 +565,7 @@ $('saveVid').onclick=async()=>{
   const len=ab.duration, bars=new Uint8Array(an.frequencyBinCount); let raf=0, t0=0, vStarted=false;
   const drawF=()=>{ const t=c.currentTime-t0;
     if(video){ const vt=t+off-P.camStart; if(vt>=0&&!vStarted){ vStarted=true; if(off<=P.camStart) video.currentTime=0; video.play().catch(()=>{}); } }
-    if(video&&vStarted&&video.readyState>=2&&!video.ended){ const vw=video.videoWidth, vh=video.videoHeight, s=Math.max(720/vw,1280/vh); g.fillStyle='#000'; g.fillRect(0,0,720,1280); g.save(); g.translate(720,0); g.scale(-1,1); g.drawImage(video,(720-vw*s)/2,(1280-vh*s)/2,vw*s,vh*s); g.restore(); }
+    if(video&&vStarted&&video.readyState>=2&&!video.ended){ const vw=video.videoWidth, vh=video.videoHeight, sc=Math.max(720/vw,1280/vh), sf=Math.min(720/vw,1280/vh); g.save(); g.translate(720,0); g.scale(-1,1); g.filter='blur(28px) brightness(.55)'; g.drawImage(video,(720-vw*sc)/2,(1280-vh*sc)/2,vw*sc,vh*sc); g.filter='none'; g.drawImage(video,(720-vw*sf)/2,(1280-vh*sf)/2,vw*sf,vh*sf); g.restore(); }
     else { const gr=g.createLinearGradient(0,0,0,1280); gr.addColorStop(0,'#2a1424'); gr.addColorStop(1,'#120a10'); g.fillStyle=gr; g.fillRect(0,0,720,1280);
       an.getByteFrequencyData(bars); const n=28,bw=14,gap=10,x0=(720-(n*bw+(n-1)*gap))/2;
       for(let i=0;i<n;i++){ const v=bars[2+i*2]/255, h=30+v*360; const lg=g.createLinearGradient(0,620-h/2,0,620+h/2); lg.addColorStop(0,'#f6b6ca'); lg.addColorStop(1,'#e2bd78'); g.fillStyle=lg; g.fillRect(x0+i*(bw+gap),620-h/2,bw,h); }
@@ -574,6 +576,20 @@ $('saveVid').onclick=async()=>{
   await new Promise(r=>{ mr.onstop=r; mr.stop(); });
   const type=mr.mimeType||mime||'video/webm', ext=type.includes('mp4')?'mp4':'webm'; const blob=new Blob(chunks,{type});
   const r=await deliver(blob,(rg?'diva-voice-part.':'diva-voice-video.')+ext); sm.innerHTML=r==='cancel'?'':'<div class="ok">✓ הסרטון מוכן</div>'; $('saveVid').disabled=false; };
+
+// ================================================================ gentle sliders (touch): a tap or a scroll never moves a slider;
+// only a deliberate sideways drag does, at half speed for fine control
+(function(){ if(!matchMedia('(pointer:coarse)').matches) return;
+  let g=null;
+  document.addEventListener('pointerdown',e=>{ if(e.pointerType==='mouse') return; const w=e.target.closest&&e.target.closest('.sl'); if(!w) return; const r=w.querySelector('input[type=range]'); if(!r||r.disabled) return;
+    g={r,x0:e.clientX,y0:e.clientY,v0:+r.value,on:false,id:e.pointerId,w:r.getBoundingClientRect().width}; },true);
+  document.addEventListener('pointermove',e=>{ if(!g||e.pointerId!==g.id) return; const dx=e.clientX-g.x0, dy=e.clientY-g.y0;
+    if(!g.on){ if(Math.abs(dy)>8&&Math.abs(dy)>Math.abs(dx)){ g=null; return; } if(Math.abs(dx)<10) return; g.on=true; g.x0=e.clientX; g.r.classList.add('drag'); return; }
+    const mn=+g.r.min, mx=+g.r.max, st=+g.r.step||1; let v=g.v0+(e.clientX-g.x0)/g.w*(mx-mn)*0.5; v=Math.round(v/st)*st; v=Math.max(mn,Math.min(mx,v));
+    if(v!==+g.r.value){ g.r.value=v; g.r.dispatchEvent(new Event('input',{bubbles:true})); } },true);
+  const end=e=>{ if(!g||e.pointerId!==g.id) return; if(g.on){ g.r.classList.remove('drag'); g.r.dispatchEvent(new Event('change',{bubbles:true})); } g=null; };
+  document.addEventListener('pointerup',end,true); document.addEventListener('pointercancel',end,true);
+})();
 
 // ================================================================ init + engine self-test
 sizeCanvas(); drawPills(); drawKb(); draw(); updateButtons();
