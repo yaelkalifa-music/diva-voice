@@ -156,7 +156,7 @@ canvas#vid{width:100%;max-width:220px;display:none;margin:10px auto 0;border-rad
     <button class="btn sm" data-m="move">↔️ הזזת השירה</button>
   </div>
   <div class="tools">
-    <button class="btn sm" id="eDel" disabled>🗑 מחיקת הקטע</button><button class="btn sm sel" id="eUp" disabled>🔊 חזק יותר</button><button class="btn sm sel" id="eDown" disabled>🔉 חלש יותר</button><button class="btn sm sel" id="eFin" disabled>◢ כניסה רכה</button><button class="btn sm sel" id="eFout" disabled>◣ יציאה רכה</button>
+    <button class="btn sm" id="eDel" disabled>🗑 מחיקת השירה בקטע</button><button class="btn sm" id="eCut" disabled>✂️ חיתוך הקטע מכל השיר</button><button class="btn sm sel" id="eUp" disabled>🔊 חזק יותר</button><button class="btn sm sel" id="eDown" disabled>🔉 חלש יותר</button><button class="btn sm sel" id="eFin" disabled>◢ כניסה רכה</button><button class="btn sm sel" id="eFout" disabled>◣ יציאה רכה</button>
     <button class="btn sm rec" id="ePunch" disabled>● הקלטה מחדש של הקטע</button>
     <button class="btn sm" id="eLoop" disabled>🔁 השמעת הקטע</button>
     <button class="btn sm" id="eClear" disabled>✕ ביטול סימון</button>
@@ -628,8 +628,29 @@ function pushUndo(a,b){ // a,b timeline samples -> store the vocal segment
 $('eDel').onclick=()=>{ if(!sel||!P.voc) return; const a=Math.round(sel[0]*P.sr), b=Math.round(sel[1]*P.sr); pushUndo(a,b); const fade=Math.round(0.006*P.sr);
   for(let k=a;k<b;k++){ const vi=k-P.shift; if(vi<0||vi>=P.voc.length) continue; let w=0; if(k-a<fade) w=1-(k-a)/fade; else if(b-k<fade) w=1-(b-k)/fade; P.voc[vi]*=w; }
   markDirty(); peaksDirty=true; draw(); };
-$('eUndo').onclick=()=>{ const u=P.undo.pop(); if(!u) return; (P.redo=P.redo||[]).push({va:u.va,data:P.voc.slice(u.va,u.va+u.data.length)}); P.voc.set(u.data,u.va); markDirty(); peaksDirty=true; draw(); autoDiva(); updateButtons(); };
-$('eRedo').onclick=()=>{ const u=(P.redo||[]).pop(); if(!u) return; P.undo.push({va:u.va,data:P.voc.slice(u.va,u.va+u.data.length)}); P.voc.set(u.data,u.va); markDirty(); peaksDirty=true; draw(); autoDiva(); updateButtons(); };
+$('eUndo').onclick=()=>{ const u=P.undo.pop(); if(!u) return; if(u.snap){ (P.redo=P.redo||[]).push({snap:takeSnap()}); putSnap(u.snap); return; } (P.redo=P.redo||[]).push({va:u.va,data:P.voc.slice(u.va,u.va+u.data.length)}); P.voc.set(u.data,u.va); markDirty(); peaksDirty=true; draw(); autoDiva(); updateButtons(); };
+$('eRedo').onclick=()=>{ const u=(P.redo||[]).pop(); if(!u) return; if(u.snap){ P.undo.push({snap:takeSnap()}); putSnap(u.snap); return; } P.undo.push({va:u.va,data:P.voc.slice(u.va,u.va+u.data.length)}); P.voc.set(u.data,u.va); markDirty(); peaksDirty=true; draw(); autoDiva(); updateButtons(); };
+// ---- cut a part out of the whole song (music, singing and video together); the song gets shorter
+function abToCh(ab){ return ab?[...Array(ab.numberOfChannels).keys()].map(i=>ab.getChannelData(i)):null; }
+function chToAb(ch,sr){ const b=getCtx().createBuffer(ch.length,ch[0].length,sr); ch.forEach((x,i)=>b.copyToChannel(x,i)); return b; }
+function takeSnap(){ return {pbOrig:P.pbOrig?abToCh(P.pbOrig).map(x=>x.slice()):null, pbSr:P.pbOrig?P.pbOrig.sampleRate:0, pb:P.pb?abToCh(P.pb).map(x=>x.slice()):null,
+  inst:P.pbInst?{L:P.pbInst.L.slice(),R:P.pbInst.R.slice()}:null, voc:P.voc?P.voc.slice():null, shift:P.shift, clips:P.clips.map(k=>({...k})), playhead}; }
+function putSnap(S){ stopPlay(); P.pbOrig=S.pbOrig?chToAb(S.pbOrig,S.pbSr):null; P.pb=S.pb?chToAb(S.pb,P.sr):null; P.pbInst=S.inst; P.voc=S.voc; P.shift=S.shift; P.clips=S.clips; playhead=Math.min(S.playhead,tlLen()/P.sr); sel=null;
+  pvReset(); markDirty(); peaksDirty=true; draw(); if(P.voc) autoDiva(); updateButtons(); }
+function cutArr(x,a,b){ a=Math.max(0,Math.min(x.length,a)); b=Math.max(a,Math.min(x.length,b)); const y=new Float32Array(x.length-(b-a)); y.set(x.subarray(0,a)); y.set(x.subarray(b),a);
+  const f=Math.min(Math.round(0.008*P.sr),a,y.length-a); for(let i=0;i<f;i++){ const w=i/f; y[a-1-i]*=w; y[a+i]*=w; } return y; }  // tiny fades: no click at the join
+$('eCut').onclick=()=>{ if(!sel) return; stopPlay(); const A=sel[0], B=sel[1], d=B-A; if(d<0.05) return;
+  P.undo.push({snap:takeSnap()}); if(P.undo.length>20) P.undo.shift(); P.redo=[];
+  const a=Math.round(A*P.sr), b=Math.round(B*P.sr);
+  if(P.pbOrig){ const r=P.pbOrig.sampleRate/P.sr; P.pbOrig=chToAb(abToCh(P.pbOrig).map(x=>cutArr(x,Math.round(a*r),Math.round(b*r))),P.pbOrig.sampleRate); }
+  if(P.pb) P.pb=chToAb(abToCh(P.pb).map(x=>cutArr(x,a,b)),P.sr);
+  if(P.pbInst) P.pbInst={L:cutArr(P.pbInst.L,a,b),R:cutArr(P.pbInst.R,a,b)};
+  if(P.voc){ const va=a-P.shift, vb=b-P.shift;
+    if(vb<=0) P.shift-=(b-a); else if(va>=P.voc.length){} else { const ca=Math.max(0,va); const removed=Math.min(vb,P.voc.length)-ca; P.voc=cutArr(P.voc,ca,ca+removed); if(va<0) P.shift=a; } }
+  const out=[]; for(const k of P.clips){ if(k.end<=A){ out.push(k); continue; } if(k.from>=B){ out.push({...k,start:k.start-d,from:k.from-d,end:k.end-d}); continue; }
+    if(k.from<A) out.push({...k,end:A}); if(k.end>B) out.push({...k,start:k.start-d,from:A,end:k.end-d}); }
+  P.clips=out; sel=null; playhead=A; pvReset(); markDirty(); peaksDirty=true; draw(); if(P.voc) autoDiva(); updateButtons();
+  $('recMsg').innerHTML='<div class="ok">✓ הקטע נחתך מהשיר ('+d.toFixed(1)+' שניות). לא אהבת? ↶ ביטול.</div>'; };
 function selOp(fn){ if(!sel||!P.voc) return; const a=Math.round(sel[0]*P.sr), b=Math.round(sel[1]*P.sr); pushUndo(a,b); const n=b-a;
   for(let k=a;k<b;k++){ const vi=k-P.shift; if(vi<0||vi>=P.voc.length) continue; P.voc[vi]*=fn((k-a)/n, k-a, b-k); }
   markDirty(); peaksDirty=true; draw(); autoDiva(); updateButtons(); }
@@ -642,7 +663,7 @@ $('eClear').onclick=()=>{ sel=null; draw(); updateButtons(); };
 $('eLoop').onclick=()=>{ if(sel) startPlay(sel[0],sel[1]); };
 $('ePunch').onclick=()=>{ if(!sel||!P.voc) return; stopPlay(); startRecording(sel[0],'punch'); };
 function updateButtons(){ try{ autoSave(); }catch(e){} try{ const on=!!(sel&&sel[1]-sel[0]>0.2); $('onlySelRow').style.display=on?'flex':'none'; if(on) $('selLen').textContent='('+fmtT(sel[0])+' – '+fmtT(sel[1])+')'; }catch(e){}
-  const hasSel=!!sel&&!!P.voc; ['eDel','eLoop','eClear'].forEach(id=>$(id).disabled=!sel); $('eDel').disabled=!hasSel; ['eUp','eDown','eFin','eFout'].forEach(id=>$(id).disabled=!hasSel); $('ePunch').disabled=!hasSel;
+  const hasSel=!!sel&&!!P.voc; ['eDel','eLoop','eClear'].forEach(id=>$(id).disabled=!sel); $('eDel').disabled=!hasSel; $('eCut').disabled=!(sel&&(P.pb||P.voc)); ['eUp','eDown','eFin','eFout'].forEach(id=>$(id).disabled=!hasSel); $('ePunch').disabled=!hasSel;
   $('eUndo').disabled=!P.undo.length; $('eRedo').disabled=!(P.redo&&P.redo.length); $('cleanBtn').disabled=!P.voc; $('recAll').disabled=false; $('recHere').disabled=!(P.pb||P.voc); $('go').disabled=!P.voc||!engineOK; $('saveWav').disabled=!(P.pb||P.voc); $('saveVid').disabled=!(P.pb||P.voc)||!window.MediaRecorder; }
 
 // ================================================================ Diva Voice settings UI
