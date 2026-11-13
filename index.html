@@ -428,7 +428,7 @@ const LOOK = (() => {
       const W = Math.round(r.w), H = Math.round(r.h), L = { x: 0, y: 0, w: W, h: H };
       if (!skinC || skinC.width !== W || skinC.height !== H) { skinC = new OffscreenCanvas(W, H); maskC = new OffscreenCanvas(W, H); }
       const sg = skinC.getContext('2d'), mg = maskC.getContext('2d');
-      sg.clearRect(0, 0, W, H); sg.filter = 'blur(' + Math.max(2, fw * 0.022).toFixed(1) + 'px) ' + (o.light ? 'brightness(1.1) saturate(1.05)' : 'brightness(1.04)');
+      sg.clearRect(0, 0, W, H); sg.filter = 'blur(' + Math.max(1.5, fw * 0.013).toFixed(1) + 'px) ' + (o.light ? 'brightness(1.1) saturate(1.05)' : 'brightness(1.04)');
       sg.drawImage(src, 0, 0, W, H); sg.filter = 'none';
       mg.clearRect(0, 0, W, H); mg.filter = 'blur(' + (fw * 0.035).toFixed(1) + 'px)'; mg.fillStyle = '#fff';
       poly(mg, grow(lm, OVAL, L, 0.93)); mg.fill();
@@ -438,12 +438,12 @@ const LOOK = (() => {
       poly(mg, grow(lm, LIPS, L, 1.12)); mg.fill();
       mg.globalCompositeOperation = 'source-over'; mg.filter = 'none';
       sg.globalCompositeOperation = 'destination-in'; sg.drawImage(maskC, 0, 0); sg.globalCompositeOperation = 'source-over';
-      g.save(); g.globalAlpha = 0.7; g.drawImage(skinC, r.x, r.y, r.w, r.h); g.restore();
+      g.save(); g.globalAlpha = 0.55; g.drawImage(skinC, r.x, r.y, r.w, r.h); g.restore();
     }
     if (o.blush) { // a touch of rosy colour on the apples of the cheeks
       g.save(); g.globalCompositeOperation = 'soft-light';
       for (const i of [205, 425]) { const [x, y] = P(lm, i, r), rad = fw * 0.16;
-        const gr = g.createRadialGradient(x, y, 0, x, y, rad); gr.addColorStop(0, 'rgba(230,80,110,.62)'); gr.addColorStop(.6, 'rgba(230,80,110,.22)'); gr.addColorStop(1, 'rgba(230,80,110,0)');
+        const gr = g.createRadialGradient(x, y, 0, x, y, rad); gr.addColorStop(0, 'rgba(230,80,110,.5)'); gr.addColorStop(.6, 'rgba(230,80,110,.17)'); gr.addColorStop(1, 'rgba(230,80,110,0)');
         g.fillStyle = gr; g.fillRect(x - rad, y - rad, rad * 2, rad * 2); }
       g.restore();
     }
