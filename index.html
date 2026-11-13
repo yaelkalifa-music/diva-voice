@@ -195,7 +195,6 @@ canvas#vid{width:100%;max-width:220px;display:none;margin:10px auto 0;border-rad
   <label class="chk"><input type="checkbox" id="beauty"> 💡 אור רך וחלק</label>
   <label class="chk"><input type="checkbox" id="lkSkin"> 🧴 עור חלק</label>
   <label class="chk"><input type="checkbox" id="lkBlush"> 🌸 סומק עדין</label>
-  <label class="chk"><input type="checkbox" id="lkEyes"> 👁 איפור עיניים עדין</label>
   <label class="chk"><input type="checkbox" id="toDrive"> ☁️ לשמור לגוגל דרייב</label>
   <div class="note opt" id="driveNote" style="display:none">אחרי הלחיצה על שמירה ייפתח חלון השיתוף – בוחרים בו <b>Drive</b>. במחשב: הקובץ יורד, ונפתח לך גוגל דרייב – גוררים אליו את הקובץ.</div>
   <canvas id="vid" width="720" height="1280"></canvas>
@@ -467,7 +466,7 @@ const LOOK = (() => {
   return { load, track, detectNow, draw, points, ready: () => !!fm };
 })();
 
-function lookOpts(){ return {light:$('beauty').checked, skin:$('lkSkin').checked, blush:$('lkBlush').checked, eyes:$('lkEyes').checked}; }
+function lookOpts(){ return {light:$('beauty').checked, skin:$('lkSkin').checked, blush:$('lkBlush').checked, eyes:false}; }
 function faceOn(){ const o=lookOpts(); return o.skin||o.blush||o.eyes; }
 function anyLook(){ const o=lookOpts(); return o.light||o.skin||o.blush||o.eyes; }
 // live look on a <video>: draw it into a canvas that sits on top
@@ -479,8 +478,8 @@ function lookOverlay(vid,cv,mirror){ let on=true; const g=cv.getContext('2d');
 let camFacing='user';
 const LS={ get(k,d){ try{ const v=localStorage.getItem('dv_'+k); return v===null?d:JSON.parse(v); }catch(e){ return d; } }, set(k,v){ try{ localStorage.setItem('dv_'+k,JSON.stringify(v)); }catch(e){} } };
 function bindOpt(id,rowId){ const cb=$(id); cb.checked=LS.get(id,false); const show=()=>{ if(rowId) $(rowId).style.display=cb.checked?(rowId==='lyricsRow'||rowId==='driveNote'?'block':'flex'):'none'; }; show(); cb.addEventListener('change',()=>{ LS.set(id,cb.checked); show(); }); }
-bindOpt('useCam','camRow'); bindOpt('useMetro','metroRow'); bindOpt('useLyrics','lyricsRow'); bindOpt('beauty'); bindOpt('lkSkin'); bindOpt('lkBlush'); bindOpt('lkEyes');
-['beauty','lkSkin','lkBlush','lkEyes'].forEach(id=>$(id).addEventListener('change',()=>{ if(faceOn()) LOOK.load().catch(()=>{}); try{ pvSync(true); }catch(e){} }));
+bindOpt('useCam','camRow'); bindOpt('useMetro','metroRow'); bindOpt('useLyrics','lyricsRow'); bindOpt('beauty'); bindOpt('lkSkin'); bindOpt('lkBlush'); 
+['beauty','lkSkin','lkBlush'].forEach(id=>$(id).addEventListener('change',()=>{ if(faceOn()) LOOK.load().catch(()=>{}); try{ pvSync(true); }catch(e){} }));
 if(faceOn()) LOOK.load().catch(()=>{}); bindOpt('toDrive','driveNote');
 const setFacing=f=>{ camFacing=f; LS.set('facing',f); $('camFront').classList.toggle('on',f==='user'); $('camBack').classList.toggle('on',f!=='user'); };
 setFacing(LS.get('facing','user')); $('camFront').onclick=()=>setFacing('user'); $('camBack').onclick=()=>setFacing('environment');
